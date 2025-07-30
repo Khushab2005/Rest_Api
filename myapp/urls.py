@@ -1,6 +1,14 @@
 from django.urls import path
 from myapp.views import *
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 urlpatterns = [
+    
+    # --------------------jWT token authentication------------------
+    path('token/',TokenObtainPairView.as_view(),name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # ---------------------end---------------
+    # -----------------basic token authentication------------------
+    path('secure_data/',secure_data, name='secure_data'),
     # ---------------------generic base api------------------
     path('generic_list/',genericlistcreate.as_view(),name='genericlistcreate'),
     path('generic_list/<int:id>',genericretriveupdatedestroy.as_view(),name='genericretriveupdatedestroy'),  

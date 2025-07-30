@@ -5,6 +5,48 @@ from myapp.serializers import EmployeeSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view , APIView
 from rest_framework.response import Response 
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination 
+from django.contrib.auth.models import User
+
+# ----------------------Token authentication----------------
+# -----------start-------
+from rest_framework.authtoken.models import Token
+user = User.objects.get(username='Admin')  # use your real username
+token, created = Token.objects.get_or_create(user=user)
+print("1")
+print(token.key)
+
+
+
+# -----------end-------
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+
+
+
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def secure_data(request):
+    return Response({'Message': 'Secure Data'})
+
+
+
+
+
+
+# ------------------Custom pagination -----------------
+class customPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+    
+
 
 
 # ----------------Generic Base Api -------------------
@@ -13,6 +55,12 @@ class genericlistcreate(ListCreateAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
     
+    filter_backends = [filters.SearchFilter,filters.OrderingFilter]  
+    search_fields = ['name', 'email']
+    ordering_fields = ['name', 'email','gender']
+
+    
+      
     
 class genericretriveupdatedestroy(RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
@@ -26,9 +74,13 @@ class genericretriveupdatedestroy(RetrieveUpdateDestroyAPIView):
 # ---------start---------
 @api_view(['GET'])
 def f_get(request):
-    data = Employee.objects.all()
+    emp = Employee.objects.all()
+    Pagination = customPagination()
+    data = Pagination.paginate_queryset(emp, request)
     ser = EmployeeSerializer(data, many=True)
-    return Response({"data": ser.data},status=status.HTTP_200_OK)
+    return Pagination.get_paginated_response(ser.data)
+
+
 @api_view(['POST'])
 def f_post(request):
     ser = EmployeeSerializer(data = request.data)
@@ -70,7 +122,9 @@ def f_delete(request, id):
 # ---------start---------
 class Class_Employe(APIView):
     def get(self, request):
-        data = Employee.objects.all()
+        emp = Employee.objects.all()
+        Pagination = customPagination()
+        data = Pagination.paginate_queryset(emp, request)   
         ser = EmployeeSerializer(data, many=True)
         return Response({"data": ser.data},status=status.HTTP_200_OK)
     def post(self, request):
