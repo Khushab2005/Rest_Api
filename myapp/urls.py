@@ -9,6 +9,7 @@ urlpatterns = [
     # ---------------------end---------------
     # -----------------basic token authentication------------------
     path('secure_data/',secure_data, name='secure_data'),
+    
     # ---------------------generic base api------------------
     path('generic_list/',genericlistcreate.as_view(),name='genericlistcreate'),
     path('generic_list/<int:id>',genericretriveupdatedestroy.as_view(),name='genericretriveupdatedestroy'),  
